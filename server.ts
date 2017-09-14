@@ -3,7 +3,10 @@ import * as BodyParser from 'body-parser';
 import * as Crypto from 'crypto';
 import * as cors from 'cors';
 import RunMode from './runmode';
+import Database from './database';
+import { ProfileData } from 'tabby-common/profile';
 
+//Database.setup();
 
 let MODE = new RunMode();
 MODE.development(true);
@@ -34,6 +37,7 @@ app.get('/profiles', function(req, res, next) {
 });
 
 app.get('/profiles/new', function(req, res) {
+  console.log("route GET '/profiles/new'");
   let length = 16
   let newId;
   do {
@@ -42,56 +46,41 @@ app.get('/profiles/new', function(req, res) {
       .slice(0, length)
       .replace(/\+/g, '0')
       .replace(/\//g, '0');
-  } while( getProfile(newId) )
-  let profile = {
+  } while( false )
+  let profile:ProfileData = {
     id: newId,
-    tabs: []
+    tabs: [],
+    title: ''
   };
-  profiles.push(profile)
-  res.json({data: profile});
-});
-
-app.all('/profiles/:id', function(req, res, next) {
-  let id = req.params['id'];
-  if( id == 'new' || getProfile(id) ) {
-    next();
-  }
-  else {
-    console.log(id + " not found in profiles.");
-    res.sendStatus(404);
-    res.send();
-  }
+  Database.addNewProfile(profile).then(() => {
+      res.json({data: profile});
+  }, (err) => {
+      console.error("rejection! REASON:")
+      console.error(err);
+  });
+  //profiles.push(profile)
 });
 
 app.get('/profiles/:id', function(req, res) {
   let id = req.params['id'];
-  res.json({"data": getProfile(id)});
+  console.log(`route GET '/profiles/:id(${id})'`);
+  Database.getProfile(id).then((profile) => {
+    res.json({"data": profile});
+  }, (err) => {
+    console.error("rejection! REASON:")
+    console.error(err);
+  });
 });
 
 app.put('/profiles/:id', function(req, res) {
   let id = req.params['id'];
-  deleteProfile(id);
-  profiles.push(req.body);
-});
-
-function getProfile(id: string) {
-  let profile;
-  profiles.forEach((currentProfile) => {
-    if(currentProfile.id == id) {
-      profile = currentProfile;
-    }
+  console.log(`route PUT '/profiles/:id(${id})'`);
+  let profileData = req.body as ProfileData
+  Database.updateProfile(profileData).then(res.json, (err) => {
+    console.error("rejection! REASON:")
+    console.error(err);
   });
-  return profile;
-}
-
-function deleteProfile(id:string) {
-  for(let i = 0; i < profiles.length; i++)
-  {
-    if(profiles[i].id == id) {
-      profiles.splice(i, 1);
-    }
-  }
-}
+});
 
 app.listen(3000, () => {
   console.log('Tabby backend started.');
