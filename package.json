@@ -11,5 +11,10 @@
     "url": "https://theCalcaholic/tabby-backend.git"
   },
   "author": "Tobias Kn\u001booeppler",
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "dependencies": {
+    "body-parser": "^1.18.1",
+    "cors": "^2.8.4",
+    "express": "^4.15.4"
+  }
 }
