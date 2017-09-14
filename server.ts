@@ -1,6 +1,6 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var crypto = require('crypto');
+import * as express from 'express';
+import * as BodyParser from 'body-parser';
+import * as Crypto from 'crypto';
 var cors = require('cors');
 
 let MODE = require('./runmode').new();
@@ -8,7 +8,7 @@ MODE.development(true);
 
 var app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(BodyParser.json());
 
 const profiles = [
   {
@@ -35,7 +35,7 @@ app.get('/profiles/new', function(req, res) {
   let length = 16
   let newId;
   do {
-    newId = crypto.randomBytes(Math.ceil(length * 3 / 4))
+    newId = Crypto.randomBytes(Math.ceil(length * 3 / 4))
       .toString('base64')
       .slice(0, length)
       .replace(/\+/g, '0')
@@ -72,7 +72,7 @@ app.put('/profiles/:id', function(req, res) {
   profiles.push(req.body);
 });
 
-function getProfile(id) {
+function getProfile(id: string) {
   let profile;
   profiles.forEach((currentProfile) => {
     if(currentProfile.id == id) {
@@ -82,8 +82,8 @@ function getProfile(id) {
   return profile;
 }
 
-function deleteProfile(id) {
-  for(i = 0; i < profiles.length; i++)
+function deleteProfile(id:string) {
+  for(let i = 0; i < profiles.length; i++)
   {
     if(profiles[i].id == id) {
       profiles.splice(i, 1);
