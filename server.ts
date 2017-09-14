@@ -1,9 +1,11 @@
 import * as express from 'express';
 import * as BodyParser from 'body-parser';
 import * as Crypto from 'crypto';
-var cors = require('cors');
+import * as cors from 'cors';
+import RunMode from './runmode';
 
-let MODE = require('./runmode').new();
+
+let MODE = new RunMode();
 MODE.development(true);
 
 var app = express();
