@@ -37,7 +37,7 @@ app.get('/profiles', function(req, res, next) {
   }
 });
 
-app.get('/profiles/new', function(req, res) {
+function createNewProfile():Promise<ProfileData> {
   console.log("route GET '/profiles/new'");
   let length = 16
   let newId;
@@ -53,37 +53,65 @@ app.get('/profiles/new', function(req, res) {
     tabs: [],
     title: ''
   };
-  Database.addNewProfile(profile).then(() => {
-      res.json({data: profile});
-  }, (err) => {
-      console.error("rejection! REASON:")
-      console.error(err);
-  });
+  return Database.addNewProfile(profile).then(
+    () => profile
+  );
   //profiles.push(profile)
-});
+};
 
-app.get('/profiles/:id', function(req, res) {
+app.get('/profiles/:id', function(req, res, next) {
   let id = req.params['id'];
+  if(id == "new") {
+    createNewProfile().then(
+      (profile) => {
+        res.json({"data": profile});
+      },
+      (err) => {
+        console.error("rejection! REASON:")
+        console.error(err);
+        res.sendStatus(503).send();
+      });
+    return;
+  }
   console.log(`route GET '/profiles/:id(${id})'`);
   Database.getProfile(id).then((profile) => {
     res.json({"data": profile});
   }, (err) => {
     console.error("rejection! REASON:")
     console.error(err);
+    res.sendStatus(404).send();
   });
 });
 
-app.put('/tab/new', function(req, res) {
-  console.log(`route PUT '/profiles/new'`);
+app.put('/tabs/new', function(req, res) {
+  console.log(`route PUT '/tabs/new'`);
+  console.log("data: {");
+  console.log(req.body);
+  console.log("}");
+  let newTab = req.body.tab as TabData;
   let profileId = req.body.profileId as string;
-  Database.addNewTab(profileId).then(
+  Database.addNewTab(newTab, profileId).then(
     (tab: TabData) => {
+      console.log("created new tab:");
+      console.log(tab);
       res.json({"data": tab})
     },
     (err:any) => {
     console.error("rejection! REASON:")
     console.error(err);
   });
+});
+
+app.put('/tabs/:id', function(req, res) {
+  let id = req.params['id'];
+  console.log(`route PUT 'tabs/:id${id}'`);
+  let tab = req.body.tab as TabData;
+  let profileId = req.body.profileId as string;
+  Database.updateTab(tab, profileId).then(
+    () => {
+      res.send('')
+    }
+  );
 });
 
 app.put('/profiles/:id', function(req, res) {
