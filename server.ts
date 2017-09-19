@@ -5,6 +5,7 @@ import * as cors from 'cors';
 import RunMode from './runmode';
 import Database from './database';
 import { ProfileData } from 'tabby-common/profile';
+import { TabData } from 'tabby-common/tab';
 
 //Database.setup();
 
@@ -67,6 +68,19 @@ app.get('/profiles/:id', function(req, res) {
   Database.getProfile(id).then((profile) => {
     res.json({"data": profile});
   }, (err) => {
+    console.error("rejection! REASON:")
+    console.error(err);
+  });
+});
+
+app.put('/tab/new', function(req, res) {
+  console.log(`route PUT '/profiles/new'`);
+  let profileId = req.body.profileId as string;
+  Database.addNewTab(profileId).then(
+    (tab: TabData) => {
+      res.json({"data": tab})
+    },
+    (err:any) => {
     console.error("rejection! REASON:")
     console.error(err);
   });
