@@ -78,7 +78,7 @@ let Database = {
 
   updateProfile(profile:ProfileData):Promise<any> {
     let db = getDB();
-    let promises = profile.tabs.map((data) => {
+    /*let promises = profile.tabs.map((data) => {
       let tab: TabData = {id: data.id, title: data.title, content: data.content};
       console.log("updating profile...")
       console.log(profile);
@@ -103,16 +103,14 @@ let Database = {
         `));
       }
       return request;
-    });
+    });*/
 
-    promises.push(executeRequest(db.run.bind(db, `
+    return executeRequest(db.run.bind(db, `
       UPDATE Profile
         SET
           Title='${profile.title}'
         WHERE Id='${profile.id}'
-    `)));
-
-    return Promise.all(promises).then(()=>{}, this.handleError);
+    `));
   },
 
   addNewProfile(profile:ProfileData):Promise<any> {
