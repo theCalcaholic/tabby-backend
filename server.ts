@@ -8,8 +8,7 @@ import { ProfileData } from 'tabby-common/profile';
 import { TabData } from 'tabby-common/tab';
 
 //Database.setup();
-
-if( "--migrate" in process.argv ) {
+if( process.argv.indexOf("--migrate") > -1 ) {
   Database.migrate();
 }
 

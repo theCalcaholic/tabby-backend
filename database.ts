@@ -55,13 +55,15 @@ let Database = {
   migrate():void {
     console.log("Migrating database...");
     if(!fs.existsSync(DBPATH)) {
+      fs.mkdirSync(DBPATH.substr(0, DBPATH.lastIndexOf("/")));
       this.setup();
     }
     let db = getDB();
     db.serialize(() => {
       db.get(`SELECT * FROM Meta WHERE Key='version'`, (error, row) => {
-      let version = versionFromString(row.Value);
-      console.log("Detected version: " + version);
+        if(row == undefined) return;
+        let version = versionFromString(row.Value);
+        console.log("Detected version: " + version);
     });
   });
   },
