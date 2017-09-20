@@ -4,8 +4,8 @@ import * as Crypto from 'crypto';
 import * as cors from 'cors';
 import RunMode from './runmode';
 import Database from './database';
-import { ProfileData } from 'tabby-common/profile';
-import { TabData } from 'tabby-common/tab';
+import { ProfileData } from 'tabby-common/models/profile';
+import { TabData } from 'tabby-common/models/tab';
 
 //Database.setup();
 if( process.argv.indexOf("--migrate") > -1 ) {

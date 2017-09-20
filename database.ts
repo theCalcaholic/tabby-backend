@@ -1,8 +1,8 @@
 //import * as sqlite3 from 'sqlite3';
 import * as fs from 'fs';
 import * as sqlite3 from 'sqlite3';
-import { ProfileData } from 'tabby-common/profile';
-import { TabData } from 'tabby-common/tab';
+import { ProfileData } from 'tabby-common/models/profile';
+import { TabData } from 'tabby-common/models/tab';
 import { Version, versionFromString } from './version';
 //import * as Promise from 'bluebird';
 
