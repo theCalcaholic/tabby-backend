@@ -94,12 +94,8 @@ let Database = {
                 id: row.Id,
                 tabs: tabs
                } as ProfileData;
-          },
-          this.handleError
-        );
-      },
-      this.handleError
-      );
+          });
+      });
   },
 
   updateProfile(profile:ProfileData):Promise<any> {
