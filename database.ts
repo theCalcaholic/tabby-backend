@@ -71,7 +71,10 @@ let Database = {
   getProfile(id:string):Promise<ProfileData> {
     console.log(`DB.getProfile(${id})`);
     let db = getDB();
-    return executeRequest(db.get.bind(db, `SELECT * FROM Profile WHERE Profile.Id='${id}'`)).then(
+    return (executeRequest(
+      db.get.bind(db, `SELECT * FROM Profile WHERE Profile.Id='${id}'`)
+      ) as Promise<ProfileData>
+      ).then(
         (row:any) => {
           console.log("found profile:");
           console.log(row);
