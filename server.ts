@@ -9,8 +9,13 @@ import { TabData } from 'tabby-common/tab';
 
 //Database.setup();
 
+if( "--migrate" in process.argv ) {
+  Database.migrate();
+}
+
 let MODE = new RunMode();
 MODE.development(true);
+
 
 var app = express();
 app.use(cors());
@@ -104,7 +109,7 @@ app.put('/tabs/new', function(req, res) {
 
 app.put('/tabs/:id', function(req, res) {
   let id = req.params['id'];
-  console.log(`route PUT 'tabs/:id${id}'`);
+  console.log(`route PUT 'tabs/:id(${id})'`);
   let tab = req.body.tab as TabData;
   let profileId = req.body.profileId as string;
   Database.updateTab(tab, profileId).then(

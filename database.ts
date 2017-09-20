@@ -1,7 +1,9 @@
 //import * as sqlite3 from 'sqlite3';
+import * as fs from 'fs';
 import * as sqlite3 from 'sqlite3';
 import { ProfileData } from 'tabby-common/profile';
 import { TabData } from 'tabby-common/tab';
+import { Version, versionFromString } from './version';
 //import * as Promise from 'bluebird';
 
 const DBPATH = './db/main.sql';
@@ -32,6 +34,10 @@ let Database = {
   setup():void {
     let db = getDB();
     db.serialize(() => {
+      db.run(`CREATE TABLE Meta (
+        Key CHAR(16) NOT NULL PRIMARY KEY,
+        Value CHAR(200)
+      )`);
       db.run(`CREATE TABLE Profile (
         Id CHAR(16) NOT NULL PRIMARY KEY,
         Title CHAR(100))`);
@@ -42,7 +48,21 @@ let Database = {
         ParentProfile CHAR(16) NOT NULL,
         FOREIGN KEY(ParentProfile) REFERENCES Profile(Id)
       )`);
+      db.run(`INSERT INTO Meta (Key, Value) VALUES ('version', '1.0.0')`);
     });
+  },
+
+  migrate():void {
+    if(!fs.existsSync(DBPATH)) {
+      this.setup();
+    }
+    let db = getDB();
+    db.serialize(() => {
+      db.get(`SELECT * FROM Meta WHERE Key='version'`, (error, row) => {
+      let version = versionFromString(row.Value);
+      console.log("Detected version: " + version);
+    });
+  });
   },
 
   getProfile(id:string):Promise<ProfileData> {
@@ -139,7 +159,7 @@ let Database = {
   },
 
   updateTab(tab:TabData, profileId:string):Promise<any> {
-    console.log(`updateTab(<TabData>, ${profileId})`);
+    console.log(`DB.updateTab(<TabData>, ${profileId})`);
     let db = getDB();
     return executeRequest(db.run.bind(db, `
       UPDATE Tab
