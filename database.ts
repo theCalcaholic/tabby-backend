@@ -48,11 +48,12 @@ let Database = {
         ParentProfile CHAR(16) NOT NULL,
         FOREIGN KEY(ParentProfile) REFERENCES Profile(Id)
       )`);
-      db.run(`INSERT INTO Meta (Key, Value) VALUES ('version', '1.0.0')`);
+      db.run(`INSERT INTO Meta (Key, Value) VALUES ('version', '0.0.1')`);
     });
   },
 
   migrate():void {
+    console.log("Migrating database...");
     if(!fs.existsSync(DBPATH)) {
       this.setup();
     }
