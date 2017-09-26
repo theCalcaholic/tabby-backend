@@ -72,14 +72,18 @@ let Database = {
     console.log(`DB.getProfile(${id})`);
     let db = getDB();
     return (executeRequest(
-      db.get.bind(db, `SELECT * FROM Profile WHERE Profile.Id='${id}'`)
+      db.get.bind(db, "SELECT * FROM Profile WHERE Profile.Id=?", [id])
       ) as Promise<ProfileData>
       ).then(
         (row:any) => {
           console.log("found profile:");
           console.log(row);
           let tabs = new Array;
-          return executeRequest(db.all.bind(db, `SELECT * FROM Tab WHERE ParentProfile='${id}'`)).then(
+          return executeRequest(
+            db.all.bind(db,
+              "SELECT * FROM Tab WHERE ParentProfile=?",
+              [id]))
+          .then(
             (rows) => {
             tabs = rows.map( (tabRow:any) => {
                 return {
@@ -100,39 +104,18 @@ let Database = {
 
   updateProfile(profile:ProfileData):Promise<any> {
     let db = getDB();
-    /*let promises = profile.tabs.map((data) => {
-      let tab: TabData = {id: data.id, title: data.title, content: data.content};
-      console.log("updating profile...")
-      console.log(profile);
-      let request:Promise<any>;
-      if(data.id) {
-        request = executeRequest(db.run.bind(db, `
-          UPDATE Tab
-            SET
-              Title='${tab.title}',
-              Content='${tab.content}',
-              ParentProfile='${profile.id}'
-            WHERE Id='${tab.id}'
-        `));
-      } else {
-        request = executeRequest(db.run.bind(db, `
-          INSERT INTO Tab
-            (Title, Content, ParentProfile)
-            VALUES (
-              '${tab.title}',
-              '${tab.content}', '${profile.id}'
-            )
-        `));
-      }
-      return request;
-    });*/
 
     return executeRequest(db.run.bind(db, `
       UPDATE Profile
         SET
-          Title='${profile.title}'
-        WHERE Id='${profile.id}'
-    `));
+          Title=$title
+        WHERE Id=$id
+      `,
+      {
+        $title: profile.title,
+        $id: profile.id
+      }
+    ));
   },
 
   addNewProfile(profile:ProfileData):Promise<any> {
@@ -142,8 +125,13 @@ let Database = {
     return executeRequest(db.run.bind(db, `
         INSERT INTO Profile
           (Id, Title)
-          VALUES ('${profile.id}', '${profile.title}')
-      `));
+          VALUES ($id, $title)
+      `,
+      {
+        $id: profile.id,
+        $title: profile.title
+      }
+    ));
   },
 
   addNewTab(newTab:TabData, profileId:string):Promise<TabData> {
@@ -152,10 +140,20 @@ let Database = {
     return executeRequest(db.run.bind(db, `
       INSERT INTO Tab
         (Title, Content, ParentProfile)
-        VALUES ('${newTab.title}', '${newTab.content}', '${profileId}')
-    `)).then(
+        VALUES ($title, $content, $profile)
+      `,
+      {
+        $title: newTab.title,
+        $content: newTab.content,
+        $profile: profileId
+      }
+    )).then(
       (result) => {
-        return {id: result, title: newTab.title, content: newTab.content} as TabData;
+        return {
+          id: result,
+          title: newTab.title,
+          content: newTab.content
+        } as TabData;
       }
     );
   },
@@ -166,11 +164,18 @@ let Database = {
     return executeRequest(db.run.bind(db, `
       UPDATE Tab
         SET
-          Title='${tab.title}',
-          Content='${tab.content}'
-        WHERE Id='${tab.id}'
-        AND ParentProfile='${profileId}'
-    `));
+          Title=$title,
+          Content=$content
+        WHERE Id=$id
+        AND ParentProfile=$profile
+    `,
+    {
+      $title: tab.title,
+      $content: tab.content,
+      $id: tab.id,
+      $profile: profileId
+    }
+  ));
   },
 
   handleError(error:any):void {
