@@ -51,12 +51,14 @@ let DatabaseController = {
       } as TabData
     });
 
+    console.log("found styleParams:");
+    console.log(row.StyleParameters);
     return {
       title: row.Title || "",
       id: row.Id,
       tabs: tabs,
       styleId: row.StyleId,
-      styleParameters: [JSON.parse(row.StyleParameters)]
+      styleParameters: JSON.parse(row.StyleParameters) || []
      } as ProfileData;
   },
 
@@ -126,10 +128,26 @@ let DatabaseController = {
         WHERE Id=$id
         AND ParentProfile=$profile
       `, {
-        $title: tab.title,
-        $content: tab.content,
-        $id: tab.id,
-        $profile: profileId
+      $title: tab.title,
+      $content: tab.content,
+      $id: tab.id,
+      $profile: profileId
+    });
+  },
+
+  async updateStyle(profileId:string, styleId:string, styleParameters:string) {
+    console.debug(`DB.updateStyle(string, string, string)`);
+    let db = await dbOpen(DBPATH);
+    await db.run(`
+      UPDATE Profile
+        SET
+          StyleId=$styleId,
+          StyleParameters=$styleParameters
+        WHERE Id=$profileId
+      `, {
+      $styleId: styleId,
+      $styleParameters: styleParameters,
+      $profileId: profileId
     });
   },
 

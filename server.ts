@@ -16,13 +16,14 @@ import { styles, defaultStyle } from 'tabby-common/styles/styles';
 let MODE = new RunMode();
 MODE.development(true);
 
+console.debug = console.log;
 
 var app = express();
 app.use(cors());
 app.use(BodyParser.json());
 
 async function createNewProfile():Promise<ProfileData> {
-  console.log("route GET '/profiles/new'");
+  console.debug("route GET '/profiles/new'");
   let length = 16
   // TODO: Prevent id collision
   let newId = Crypto.randomBytes(Math.ceil(length * 3 / 4))
@@ -41,23 +42,20 @@ async function createNewProfile():Promise<ProfileData> {
   return Promise.resolve(profile);
   //profiles.push(profile)
 };
-
-app.get('/profiles/:id', async function(req:any, res:any) {
-  let id = req.params['id'];
-  if(id === "new") {
-    try {
-      let newProfile = await createNewProfile();
-      res.json({"data": newProfile});
-    } catch( error ) {
-      console.error(error.stack);
-      res.sendStatus(503).send();
-    }
-    return;
-  }
-  console.log(`route GET '/profiles/:id(${id})'`);
-  try {
-    let profile = await DatabaseController.getProfile(id);
-    res.json({"data": profile});
+app.put('/profiles/:id/style', async function(req, res) {
+  let profileId = req.params['id'];
+  console.debug(`route PUT /profiles/:id(${profileId})/style`);
+  console.log("body:");
+  console.log(req.body);
+  let styleId = req.body.styleId;
+  console.log("styleId: ");
+  console.log(styleId);
+  let styleParams = req.body.styleParameters;
+  console.log("styleParams: ");
+  console.log(styleParams);
+  try{
+    await DatabaseController.updateStyle(profileId, styleId, styleParams);
+    res.send('');
   } catch( error ) {
     console.error(error.stack);
     res.sendStatus(404).send();
@@ -75,6 +73,7 @@ app.put('/tabs/new', async function(req:any, res:any) {
     res.json({"data": tab})
   } catch(error) {
     console.error(error.stack);
+    res.sendStatus(404).send();
   }
 });
 
@@ -88,20 +87,45 @@ app.put('/tabs/:id', async function(req:any, res:any) {
     res.send('')
   } catch( error ) {
     console.error(error.stack);
+    res.sendStatus(404).send();
   }
 });
 
-app.put('/profiles/:id', async function(req:any, res:any) {
+app.put('/profiles/:id/', async function(req:any, res:any) {
   let id = req.params['id'];
-  console.log(`route PUT '/profiles/:id(${id})'`);
+  console.debug(`route PUT '/profiles/:id(${id})'`);
   let profileData = req.body as ProfileData
   try {
     let profile = await DatabaseController.updateProfile(profileData);
     res.json(profile);
   } catch( error ) {
     console.error(error.stack);
+    res.sendStatus(404).send();
   }
 });
+
+app.get('/profiles/:id/', async function(req:any, res:any) {
+  let id = req.params['id'];
+  if(id === "new") {
+    try {
+      let newProfile = await createNewProfile();
+      res.json({"data": newProfile});
+    } catch( error ) {
+      console.error(error.stack);
+      res.sendStatus(503).send();
+    }
+  } else {
+    console.debug(`route GET '/profiles/:id(${id})'`);
+    try {
+      let profile = await DatabaseController.getProfile(id);
+      res.json({"data": profile});
+    } catch( error ) {
+      console.error(error.stack);
+      res.sendStatus(404).send();
+    }
+  }
+});
+
 
 
 
