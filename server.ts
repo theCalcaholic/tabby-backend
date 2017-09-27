@@ -24,14 +24,12 @@ app.use(BodyParser.json());
 async function createNewProfile():Promise<ProfileData> {
   console.log("route GET '/profiles/new'");
   let length = 16
-  let newId;
-  do {
-    newId = Crypto.randomBytes(Math.ceil(length * 3 / 4))
-      .toString('base64')
-      .slice(0, length)
-      .replace(/\+/g, '0')
-      .replace(/\//g, '0');
-  } while( false )
+  // TODO: Prevent id collision
+  let newId = Crypto.randomBytes(Math.ceil(length * 3 / 4))
+    .toString('base64')
+    .slice(0, length)
+    .replace(/\+/g, '0')
+    .replace(/\//g, '0');
   let profile:ProfileData = {
     id: newId,
     tabs: [],
@@ -40,32 +38,29 @@ async function createNewProfile():Promise<ProfileData> {
     styleParameters: []
   };
   await DatabaseController.addNewProfile(profile);
-  return profile;
+  return Promise.resolve(profile);
   //profiles.push(profile)
 };
 
 app.get('/profiles/:id', async function(req:any, res:any) {
   let id = req.params['id'];
-  if(id == "new") {
+  if(id === "new") {
     try {
-    let newProfile = await createNewProfile();
-        res.json({"data": newProfile});
+      let newProfile = await createNewProfile();
+      res.json({"data": newProfile});
     } catch( error ) {
-      console.error("rejection! REASON:")
       console.error(error.stack);
       res.sendStatus(503).send();
-      return;
     }
+    return;
   }
   console.log(`route GET '/profiles/:id(${id})'`);
   try {
     let profile = await DatabaseController.getProfile(id);
     res.json({"data": profile});
   } catch( error ) {
-    console.error("rejection! REASON:")
     console.error(error.stack);
     res.sendStatus(404).send();
-    return;
   }
 });
 
@@ -79,7 +74,6 @@ app.put('/tabs/new', async function(req:any, res:any) {
     console.debug(tab);
     res.json({"data": tab})
   } catch(error) {
-    console.error("rejection! REASON:");
     console.error(error.stack);
   }
 });
