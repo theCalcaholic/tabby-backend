@@ -3,11 +3,11 @@ import * as BodyParser from 'body-parser';
 import * as Crypto from 'crypto';
 import * as cors from 'cors';
 import RunMode from './runmode';
-import Database from './database';
+import DatabaseController from './database';
 import { ProfileData } from 'tabby-common/models/profile';
 import { TabData } from 'tabby-common/models/tab';
+import { styles, defaultStyle } from 'tabby-common/styles/styles';
 
-Database.migrate();
 
 /*if( process.argv.indexOf("--migrate") > -1 ) {
   Database.migrate();
@@ -21,28 +21,7 @@ var app = express();
 app.use(cors());
 app.use(BodyParser.json());
 
-const profiles = [
-  {
-    id: "9as9u2ob3bonal",
-    tabs: [
-      {
-        title: "Tab 1",
-        content: "<p>Content of Tab 1</p><p>More content...</p>"
-      }
-    ]
-  }
-]
-
-app.get('/profiles', function(req, res, next) {
-  if(MODE.production()) {
-    res.status(503).send();
-  }
-  else {
-    res.json({"data": profiles});
-  }
-});
-
-function createNewProfile():Promise<ProfileData> {
+async function createNewProfile():Promise<ProfileData> {
   console.log("route GET '/profiles/new'");
   let length = 16
   let newId;
@@ -56,80 +35,89 @@ function createNewProfile():Promise<ProfileData> {
   let profile:ProfileData = {
     id: newId,
     tabs: [],
-    title: ''
+    title: '',
+    styleId: 'testStyle',
+    styleParameters: []
   };
-  return Database.addNewProfile(profile).then(
-    () => profile
-  );
+  await DatabaseController.addNewProfile(profile);
+  return profile;
   //profiles.push(profile)
 };
 
-app.get('/profiles/:id', function(req, res, next) {
+app.get('/profiles/:id', async function(req:any, res:any) {
   let id = req.params['id'];
   if(id == "new") {
-    createNewProfile().then(
-      (profile) => {
-        res.json({"data": profile});
-      },
-      (err) => {
-        console.error("rejection! REASON:")
-        console.error(err);
-        res.sendStatus(503).send();
-      });
-    return;
+    try {
+    let newProfile = await createNewProfile();
+        res.json({"data": newProfile});
+    } catch( error ) {
+      console.error("rejection! REASON:")
+      console.error(error.stack);
+      res.sendStatus(503).send();
+      return;
+    }
   }
   console.log(`route GET '/profiles/:id(${id})'`);
-  Database.getProfile(id).then((profile) => {
+  try {
+    let profile = await DatabaseController.getProfile(id);
     res.json({"data": profile});
-  }, (err) => {
+  } catch( error ) {
     console.error("rejection! REASON:")
-    console.error(err);
+    console.error(error.stack);
     res.sendStatus(404).send();
-  });
+    return;
+  }
 });
 
-app.put('/tabs/new', function(req, res) {
-  console.log(`route PUT '/tabs/new'`);
-  console.log("data: {");
-  console.log(req.body);
-  console.log("}");
+app.put('/tabs/new', async function(req:any, res:any) {
+  console.debug(`route PUT '/tabs/new'`);
   let newTab = req.body.tab as TabData;
   let profileId = req.body.profileId as string;
-  Database.addNewTab(newTab, profileId).then(
-    (tab: TabData) => {
-      console.log("created new tab:");
-      console.log(tab);
-      res.json({"data": tab})
-    },
-    (err:any) => {
-    console.error("rejection! REASON:")
-    console.error(err);
-  });
+  try {
+    let tab = await DatabaseController.addNewTab(newTab, profileId);
+    console.debug("created new tab:");
+    console.debug(tab);
+    res.json({"data": tab})
+  } catch(error) {
+    console.error("rejection! REASON:");
+    console.error(error.stack);
+  }
 });
 
-app.put('/tabs/:id', function(req, res) {
+app.put('/tabs/:id', async function(req:any, res:any) {
   let id = req.params['id'];
-  console.log(`route PUT 'tabs/:id(${id})'`);
+  console.debug(`route PUT 'tabs/:id(${id})'`);
   let tab = req.body.tab as TabData;
   let profileId = req.body.profileId as string;
-  Database.updateTab(tab, profileId).then(
-    () => {
-      res.send('')
-    }
-  );
+  try {
+    await DatabaseController.updateTab(tab, profileId);
+    res.send('')
+  } catch( error ) {
+    console.error(error.stack);
+  }
 });
 
-app.put('/profiles/:id', function(req, res) {
+app.put('/profiles/:id', async function(req:any, res:any) {
   let id = req.params['id'];
   console.log(`route PUT '/profiles/:id(${id})'`);
   let profileData = req.body as ProfileData
-  Database.updateProfile(profileData).then(res.json, (err) => {
-    console.error("rejection! REASON:")
-    console.error(err);
-  });
+  try {
+    let profile = await DatabaseController.updateProfile(profileData);
+    res.json(profile);
+  } catch( error ) {
+    console.error(error.stack);
+  }
 });
 
-app.listen(3000, () => {
+
+
+DatabaseController.migrate()
+.then(() => {
+  app.listen(3000, () => {
   console.log('Tabby backend started.');
   console.log('Listening on port 3000');
+  })
 })
+.catch(err => {
+  console.error(err.stack);
+});
