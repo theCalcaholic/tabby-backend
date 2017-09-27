@@ -7,10 +7,11 @@ import Database from './database';
 import { ProfileData } from 'tabby-common/models/profile';
 import { TabData } from 'tabby-common/models/tab';
 
-//Database.setup();
-if( process.argv.indexOf("--migrate") > -1 ) {
+Database.migrate();
+
+/*if( process.argv.indexOf("--migrate") > -1 ) {
   Database.migrate();
-}
+}*/
 
 let MODE = new RunMode();
 MODE.development(true);
