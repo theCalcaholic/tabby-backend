@@ -67,7 +67,7 @@ let Database = {
             ParentProfile CHAR(16) NOT NULL,
             FOREIGN KEY(ParentProfile) REFERENCES Profile(Id)
           )`);
-          db.run(`INSERT INTO Meta (Key, Value) VALUES ('version', '0.0.1')`);
+          db.run(`INSERT INTO Meta (Key, Value) VALUES ('version', '0.0.0')`);
         });
       }
     },
@@ -115,24 +115,27 @@ let Database = {
     }
     else {
       db = this.getDB(true);
-      db.serialize(() => {
-        db.get.bind(db, `SELECT * FROM Meta WHERE Key='version'`, (row:any) => {
-          if(row == undefined ) throw Error("The database seems to be corrupted!");
-          version = new Version(row.Value);
-        })
-      });
+      db.get(`SELECT Value FROM Meta WHERE Key='version'`, (err, row) => {
+        if( typeof row === 'undefined' || row === null || row.Value === null)
+          throw Error("The database seems to be corrupted!");
+        version = new Version(row.Value);
+
+        console.log("Detected version: " + version.toString());
+        this.migrationRoutines.forEach((routine:MigrationRoutine) => {
+          if( routine.version.greaterThan(version) ) {
+            console.log("migrating to " + routine.version.toString() + "...");
+            routine.migrate(db);
+            version = routine.version
+            db.serialize(() => {
+              db.run(`UPDATE Meta SET Value=? WHERE Key='version'`, [version.toString()]);
+            });
+            console.log("done.");
+          }
+        });
+
+        this.blocked = false;
+      })
     }
-
-    console.log("Detected version: " + version.toString());
-    this.migrationRoutines.forEach((routine:MigrationRoutine) => {
-      if( routine.version.greaterThan(version) ) {
-        console.log("migrating to " + routine.version.toString() + "...");
-        routine.migrate(db);
-        console.log("done.");
-      }
-    });
-
-    this.blocked = false;
   },
 
   getProfile(id:string):Promise<ProfileData> {
