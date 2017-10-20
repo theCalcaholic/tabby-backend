@@ -54,7 +54,7 @@ app.put('/profiles/:id/style', async function(req, res) {
   console.log("styleParams: ");
   console.log(styleParams);
   try{
-    await DatabaseController.updateStyle(profileId, styleId, styleParams);
+    await DatabaseController.updateStyle(profileId, styleId, JSON.stringify(styleParams));
     res.send('');
   } catch( error ) {
     console.error(error.stack);

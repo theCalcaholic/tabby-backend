@@ -51,8 +51,8 @@ let DatabaseController = {
       } as TabData
     });
 
-    console.log("found styleParams:");
-    console.log(row.StyleParameters);
+    console.log("found profile:");
+    console.log(row);
     return {
       title: row.Title || "",
       id: row.Id,
@@ -137,6 +137,8 @@ let DatabaseController = {
 
   async updateStyle(profileId:string, styleId:string, styleParameters:string) {
     console.debug(`DB.updateStyle(string, string, string)`);
+    console.debug("style:");
+    console.debug(styleParameters);
     let db = await dbOpen(DBPATH);
     await db.run(`
       UPDATE Profile
