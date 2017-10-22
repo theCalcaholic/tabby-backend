@@ -1,7 +1,7 @@
 -- Up
 
 ALTER TABLE Profile
-  ADD COLUMN BgMusicURL CHAR(150) DEFAULT 'default';
+  ADD COLUMN BgMusicUrl CHAR(150) DEFAULT 'default';
 
 -- Down
 CREATE TEMPORARY TABLE Profile_backup(Id,Title);

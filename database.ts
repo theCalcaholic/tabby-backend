@@ -58,7 +58,8 @@ let DatabaseController = {
       id: row.Id,
       tabs: tabs,
       styleId: row.StyleId,
-      styleParameters: JSON.parse(row.StyleParameters) || []
+      styleParameters: JSON.parse(row.StyleParameters) || [],
+      bgMusicUrl: row.BgMusicUrl
      } as ProfileData;
   },
 
@@ -160,7 +161,7 @@ let DatabaseController = {
     await db.run(`
       UPDATE Profile
         SET
-          BgMusicUrl=$url,
+          BgMusicUrl=$url
         WHERE Id=$profileId
       `, {
       $url: url,

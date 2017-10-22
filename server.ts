@@ -58,9 +58,9 @@ app.put('/profiles/:id/style', async function(req, res) {
   }
 });
 
-app.put('/profiles/:id/music', async function(req, res) {
+app.put('/profiles/:id/background-music', async function(req, res) {
   let profileId = req.params['id'];
-  console.debug(`route PUT /profiles/:id(${profileId})/style`)
+  console.debug(`route PUT /profiles/:id(${profileId})/background-music`)
   let  url = req.body.bgMusicUrl;
   try {
     await DatabaseController.updateBgMusicUrl(profileId, url);
@@ -127,6 +127,7 @@ app.get('/profiles/:id/', async function(req:any, res:any) {
     console.debug(`route GET '/profiles/:id(${id})'`);
     try {
       let profile = await DatabaseController.getProfile(id);
+      console.log("return profile: ", profile);
       res.json({"data": profile});
     } catch( error ) {
       console.error(error.stack);
