@@ -163,6 +163,9 @@ app.get('/profiles/:id/style', async function(req:any, res:any) {
       res.sendStatus(404).send();
     } else {
       style.loadParameters(profile.styleParameters);
+      res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.header('Expires', '-1');
+      res.header('Pragma', 'no-cache');
       res.writeHead(200, {"Content-Type": "text/css"});
       res.write(style.exportString());
       console.log("return profile style: ", style.exportString());
