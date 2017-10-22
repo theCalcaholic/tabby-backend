@@ -6,6 +6,7 @@ import RunMode from './runmode';
 import DatabaseController from './database';
 import { ProfileData } from '../tabby-common/models/profile';
 import { TabData } from '../tabby-common/models/tab';
+import { Style } from '../tabby-common/models/style';
 import { styles, defaultStyle } from '../tabby-common/styles/styles';
 
 
@@ -133,6 +134,39 @@ app.get('/profiles/:id/', async function(req:any, res:any) {
       console.error(error.stack);
       res.sendStatus(404).send();
     }
+  }
+});
+
+app.get('/profiles/:id/style', async function(req:any, res:any) {
+  let id = req.params['id'];
+  console.debug(`route GET '/profiles/:id(${id})/style'`);
+  let profile: ProfileData;
+  try {
+    profile = await DatabaseController.getProfile(id);
+  } catch( error ) {
+    console.error(error.stack);
+    res.sendStatus(404).send();
+    return;
+  }
+    let style: Style | undefined;
+    let styleNotFound = styles.every((s) => {
+      let tmpStyle = new s();
+      if(tmpStyle.id == profile.styleId) {
+        style = tmpStyle
+        return false;
+      }
+      return true;
+    });
+
+    if(styleNotFound || typeof style === 'undefined') {
+      console.log("ERROR: no style found!");
+      res.sendStatus(404).send();
+    } else {
+      style.loadParameters(profile.styleParameters);
+      res.writeHead(200, {"Content-Type": "text/css"});
+      res.write(style.exportString());
+      console.log("return profile style: ", style.exportString());
+      res.send();
   }
 });
 
