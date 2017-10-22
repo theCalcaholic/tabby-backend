@@ -4,9 +4,9 @@ import * as Crypto from 'crypto';
 import * as cors from 'cors';
 import RunMode from './runmode';
 import DatabaseController from './database';
-import { ProfileData } from 'tabby-common/models/profile';
-import { TabData } from 'tabby-common/models/tab';
-import { styles, defaultStyle } from 'tabby-common/styles/styles';
+import { ProfileData } from '../tabby-common/models/profile';
+import { TabData } from '../tabby-common/models/tab';
+import { styles, defaultStyle } from '../tabby-common/styles/styles';
 
 
 /*if( process.argv.indexOf("--migrate") > -1 ) {
@@ -36,29 +36,38 @@ async function createNewProfile():Promise<ProfileData> {
     tabs: [],
     title: '',
     styleId: 'testStyle',
-    styleParameters: []
+    styleParameters: [],
+    bgMusicUrl: null
   };
   await DatabaseController.addNewProfile(profile);
   return Promise.resolve(profile);
   //profiles.push(profile)
 };
+
 app.put('/profiles/:id/style', async function(req, res) {
   let profileId = req.params['id'];
   console.debug(`route PUT /profiles/:id(${profileId})/style`);
-  console.log("body:");
-  console.log(req.body);
   let styleId = req.body.styleId;
-  console.log("styleId: ");
-  console.log(styleId);
   let styleParams = req.body.styleParameters;
-  console.log("styleParams: ");
-  console.log(styleParams);
   try{
     await DatabaseController.updateStyle(profileId, styleId, JSON.stringify(styleParams));
     res.send('');
   } catch( error ) {
     console.error(error.stack);
-    res.sendStatus(404).send();
+    res.sendStatus(503).send();
+  }
+});
+
+app.put('/profiles/:id/music', async function(req, res) {
+  let profileId = req.params['id'];
+  console.debug(`route PUT /profiles/:id(${profileId})/style`)
+  let  url = req.body.bgMusicUrl;
+  try {
+    await DatabaseController.updateBgMusicUrl(profileId, url);
+    res.send('');
+  } catch( error ) {
+    console.error(error.stack);
+    res.sendStatus(503).send()
   }
 });
 

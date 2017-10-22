@@ -1,8 +1,8 @@
 //import * as sqlite3 from 'sqlite3';
 import * as fs from 'fs';
 import {open as dbOpen } from 'sqlite';
-import { ProfileData } from 'tabby-common/models/profile';
-import { TabData } from 'tabby-common/models/tab';
+import { ProfileData } from '../tabby-common/models/profile';
+import { TabData } from '../tabby-common/models/tab';
 import { Version } from './version';
 import { DBBlockedError } from './dbblockederror';
 //import * as module from './package.json';
@@ -83,14 +83,15 @@ let DatabaseController = {
     let db = await dbOpen(DBPATH);
     await db.run(`
         INSERT INTO Profile
-          (Id, Title, StyleId, StyleParameters)
-          VALUES ($id, $title, $styleId, $styleParams)
+          (Id, Title, StyleId, StyleParameters, BgMusicUrl)
+          VALUES ($id, $title, $styleId, $styleParams, $bgMusicUrl)
       `,
       {
         $id: profile.id,
         $title: profile.title,
         $styleId: profile.styleId,
-        $styleParams: JSON.stringify(profile.styleParameters)
+        $styleParams: JSON.stringify(profile.styleParameters),
+        $bgMusicUrl: profile.bgMusicUrl
       }
     );
   },
@@ -149,6 +150,20 @@ let DatabaseController = {
       `, {
       $styleId: styleId,
       $styleParameters: styleParameters,
+      $profileId: profileId
+    });
+  },
+
+  async updateBgMusicUrl(profileId:string, url:string) {
+    console.debug(`DB.updateBgMusicUrl(string, string, string)`);
+    let db = await dbOpen(DBPATH);
+    await db.run(`
+      UPDATE Profile
+        SET
+          BgMusicUrl=$url,
+        WHERE Id=$profileId
+      `, {
+      $url: url,
       $profileId: profileId
     });
   },

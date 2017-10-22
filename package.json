@@ -22,7 +22,6 @@
     "cors": "^2.8.4",
     "express": "^4.15.4",
     "sqlite": "^2.8.0",
-    "tabby-common": "git://github.com/theCalcaholic/tabby-common.git"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.43",
