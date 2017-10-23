@@ -137,6 +137,19 @@ let DatabaseController = {
     });
   },
 
+  async deleteTab(tabId:string, profileId:string) {
+    console.debug(`DB.deleteTab(<TabData>, ${profileId})`);
+    let db = await dbOpen(DBPATH);
+    await db.run(`
+      DELETE FROM Tab
+        WHERE Id=$id
+        AND ParentProfile=$profile
+    `,{
+      $id: tabId,
+      $profile: profileId
+    });
+  },
+
   async updateStyle(profileId:string, styleId:string, styleParameters:string) {
     console.debug(`DB.updateStyle(string, string, string)`);
     console.debug("style:");

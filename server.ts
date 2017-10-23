@@ -93,7 +93,12 @@ app.put('/tabs/:id', async function(req:any, res:any) {
   let tab = req.body.tab as TabData;
   let profileId = req.body.profileId as string;
   try {
-    await DatabaseController.updateTab(tab, profileId);
+    console.log("tab", tab, typeof tab);
+    if(!tab) {
+      await DatabaseController.deleteTab(id, profileId);
+    } else {
+      await DatabaseController.updateTab(tab, profileId);
+    }
     res.send('')
   } catch( error ) {
     console.error(error.stack);
