@@ -1,0 +1,9 @@
+-- Up
+CREATE TABLE User (
+  Id CHAR(16) NOT NULL PRIMARY KEY,
+  Email CHAR(100) UNIQUE,
+  Password CHAR(100) UNIQUE,
+  Salt CHAR(100)
+);
+-- Down
+DROP TABLE User;
