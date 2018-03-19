@@ -52,7 +52,7 @@ app.put('/profiles/:id/style', async function(req, res) {
   let styleParams = req.body.styleParameters;
   try{
     await DatabaseController.updateStyle(profileId, styleId, JSON.stringify(styleParams));
-    res.send('');
+    res.json({'body': ''}).send();
   } catch( error ) {
     console.error(error.stack);
     res.sendStatus(503).send();
@@ -65,10 +65,10 @@ app.put('/profiles/:id/background-music', async function(req, res) {
   let  url = req.body.bgMusicUrl;
   try {
     await DatabaseController.updateBgMusicUrl(profileId, url);
-    res.send('');
+    res.json({'body': ''}).send();
   } catch( error ) {
     console.error(error.stack);
-    res.sendStatus(503).send()
+    res.sendStatus(503).send();
   }
 });
 
@@ -80,7 +80,7 @@ app.put('/tabs/new', async function(req:any, res:any) {
     let tab = await DatabaseController.addNewTab(newTab, profileId);
     console.debug("created new tab:");
     console.debug(tab);
-    res.json({"data": tab})
+    res.json({"body": tab})
   } catch(error) {
     console.error(error.stack);
     res.sendStatus(404).send();
@@ -99,7 +99,7 @@ app.put('/tabs/:id', async function(req:any, res:any) {
     } else {
       await DatabaseController.updateTab(tab, profileId);
     }
-    res.send('')
+    res.json({"body": ''}).send();
   } catch( error ) {
     console.error(error.stack);
     res.sendStatus(404).send();
@@ -112,7 +112,7 @@ app.put('/profiles/:id/', async function(req:any, res:any) {
   let profileData = req.body as ProfileData
   try {
     let profile = await DatabaseController.updateProfile(profileData);
-    res.json(profile);
+    res.json({"body": profile});
   } catch( error ) {
     console.error(error.stack);
     res.sendStatus(404).send();
@@ -124,7 +124,7 @@ app.get('/profiles/:id/', async function(req:any, res:any) {
   if(id === "new") {
     try {
       let newProfile = await createNewProfile();
-      res.json({"data": newProfile});
+      res.json({"body": newProfile});
     } catch( error ) {
       console.error(error.stack);
       res.sendStatus(503).send();
@@ -134,7 +134,7 @@ app.get('/profiles/:id/', async function(req:any, res:any) {
     try {
       let profile = await DatabaseController.getProfile(id);
       console.log("return profile: ", profile);
-      res.json({"data": profile});
+      res.json({"body": profile});
     } catch( error ) {
       console.error(error.stack);
       res.sendStatus(404).send();
@@ -157,7 +157,7 @@ app.get('/profiles/:id/style', async function(req:any, res:any) {
     let styleNotFound = styles.every((s) => {
       let tmpStyle = new s();
       if(tmpStyle.id == profile.styleId) {
-        style = tmpStyle
+        style = tmpStyle;
         return false;
       }
       return true;
@@ -174,7 +174,7 @@ app.get('/profiles/:id/style', async function(req:any, res:any) {
       res.writeHead(200, {"Content-Type": "text/css"});
       res.write(style.exportString());
       console.log("return profile style: ", style.exportString());
-      res.send();
+      res.json({'body': ''}).send();
   }
 });
 
